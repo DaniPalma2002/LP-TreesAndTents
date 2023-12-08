@@ -38,14 +38,13 @@ todasCelulas(Tabuleiro, TodasCelulas) :-
 
 nao_tem_objeto(Tabuleiro, Obj, (A, B)) :-
     obtem_objeto(Tabuleiro, (A, B), O),
-    not(O == Obj).
+    not((O == Obj) ; var(Obj)).
 
-todasCelulas(Tabuleiro, TodasCelulas, Objecto) :-
-    var(Objecto),
-    todasCelulas(Tabuleiro, TodasCelulas).
+% todasCelulas(Tabuleiro, TodasCelulas, Objecto) :-
+%     var(Objecto),
+%     todasCelulas(Tabuleiro, TodasCelulas).
 
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
-    not(var(Objecto)),
     todasCelulas(Tabuleiro, TodasCelulas),
     exclude(nao_tem_objeto(Tabuleiro, Objecto), TodasCelulas, Celulas).
     
