@@ -4,10 +4,19 @@
 :- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
-% obtem_objeto(Tabuleiro, (L, C), Objeto) # TODO change to accept ouside index
+% tamanho_tabuleiro(Tabuleiro, Linhas, Colunas)
+tamanho_tabuleiro(Tabuleiro, Linhas, Colunas) :-
+    length(Tabuleiro, Linhas),
+    nth0(0, Tabuleiro, C),
+    length(C, Colunas).
+
+% obtem_objeto(Tabuleiro, (L, C), Objeto)
 obtem_objeto(Tabuleiro, (L, C), Objeto) :-
-    catch(nth1(L, Tabuleiro, Linha), _, true),
-    catch(nth1(C, Linha, Objeto), _, true).
+    tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
+    ((L < 1; C < 1; L > Linhas; C > Colunas) -> 
+        true;
+        nth1(L, Tabuleiro, Linha), nth1(C, Linha, Objeto)
+    ).
 
 % nao_tem_objeto(Tabuleiro, Obj, (L, C))
 nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
@@ -41,9 +50,7 @@ vizinhancaAlargada((L, C), [(L1, C1), (L1, C), (L1, C2),
 
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
 todasCelulas(Tabuleiro, TodasCelulas) :-
-    length(Tabuleiro, Linhas),
-    nth0(0, Tabuleiro, C),
-    length(C, Colunas),
+    tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
     findall((Li, Co), (between(1, Linhas, Li), between(1, Colunas, Co)), TodasCelulas).
 
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
@@ -55,8 +62,8 @@ todasCelulas(Tabuleiro, Celulas, Objecto) :-
 calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Obj) :-
     maplist(numero_obj_lista(Obj), Tabuleiro, ContagemLinhas),
     transpose(Tabuleiro, TransposeTab),
-    maplist(numero_obj_lista(Obj), TransposeTab, ContagemColunas).
-    
+    maplist(numero_obj_lista(Obj), TransposeTab, ContagemColunas),
+    !.
     
 % celulaVazia(Tabuleiro, (L, C))
 celulaVazia(Tabuleiro, (L, C)) :-
