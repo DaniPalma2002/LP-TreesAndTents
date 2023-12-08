@@ -18,7 +18,7 @@ nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
 numero_obj_lista(_, [], 0).
 numero_obj_lista(Obj, [P | R], N) :-
     numero_obj_lista(Obj, R, N1),
-    (Obj == P, not(var(P)) -> N is N1 + 1; N is N1).
+    ((var(Obj), var(P); Obj == P, not(var(P))) -> N is N1 + 1; N is N1).
 
 % Consultas ====================================================================
 
