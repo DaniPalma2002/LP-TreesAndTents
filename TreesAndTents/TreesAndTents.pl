@@ -45,7 +45,11 @@ troca_elemento_i([P | R], Indice, Obj, [P | R1], Cont) :-
     Cont1 is Cont + 1,
     troca_elemento_i(R, Indice, Obj, R1, Cont1).
 
-
+% print_tabuleiro(Tabuleiro)
+print_tabuleiro(Tabuleiro) :-
+    writeln('Tabuleiro:'),
+    maplist(writeln, Tabuleiro),
+    writeln('--------').
 
 % Consultas ====================================================================
 
@@ -94,11 +98,10 @@ celulaVazia(Tabuleiro, (L, C)) :-
 % Inserção de tendas e relva ===================================================
 
 % insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
-% insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
-%     insereObjectoCelula_i(Tabuleiro, TendaOuRelva, (L, C), [], (L_cur, C_curr)).
-
-% insereObjectoCelula_i([], _, _, NewTabuleiro, _).
-% insereObjectoCelula_i() :-
+insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
+    nth1(L, Tabuleiro, Linha),
+    troca_elemento(Linha, C, TendaOuRelva, NovaLinha),
+    troca_elemento(Tabuleiro, L, NovaLinha, Tabuleiro).
 
 
 
