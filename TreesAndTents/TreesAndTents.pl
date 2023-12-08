@@ -4,10 +4,10 @@
 :- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
-% obtem_objeto(Tabuleiro, (L, C), Objeto)
+% obtem_objeto(Tabuleiro, (L, C), Objeto) # TODO change to accept ouside index
 obtem_objeto(Tabuleiro, (L, C), Objeto) :-
-    nth1(L, Tabuleiro, Linha),
-    nth1(C, Linha, Objeto).
+    catch(nth1(L, Tabuleiro, Linha), _, true),
+    catch(nth1(C, Linha, Objeto), _, true).
 
 % nao_tem_objeto(Tabuleiro, Obj, (L, C))
 nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
@@ -58,7 +58,9 @@ calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Obj) :-
     maplist(numero_obj_lista(Obj), TransposeTab, ContagemColunas).
     
     
-
 % celulaVazia(Tabuleiro, (L, C))
+celulaVazia(Tabuleiro, (L, C)) :-
+    obtem_objeto(Tabuleiro, (L, C), Obj),
+    var(Obj).
 
 % Inserção de tendas e relva ===================================================
