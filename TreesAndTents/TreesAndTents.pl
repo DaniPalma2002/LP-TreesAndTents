@@ -90,10 +90,12 @@ calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Obj) :-
     maplist(numero_obj_lista(Obj), TransposeTab, ContagemColunas),
     !.
     
+
 % celulaVazia(Tabuleiro, (L, C))
 celulaVazia(Tabuleiro, (L, C)) :-
     obtem_objeto(Tabuleiro, (L, C), Obj),
     var(Obj).
+
 
 % Inserção de tendas e relva ===================================================
 
@@ -103,6 +105,16 @@ insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
     troca_elemento(Linha, C, TendaOuRelva, NovaLinha),
     troca_elemento(Tabuleiro, L, NovaLinha, Tabuleiro).
 
+% insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) # TODO PRECISA DE SER APENAS NA MESMA LINHA??
+insereObjectoEntrePosicoes(_, _, (_, C1), (_, C2)) :- C1 > C2, !.
+insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) :-
+    C1 =< C2,
+    insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C1)),
+    NewC1 is C1 + 1,
+    insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, NewC1), (L, C2)).
+
+
+% Estratégias ==================================================================
 
 
 
