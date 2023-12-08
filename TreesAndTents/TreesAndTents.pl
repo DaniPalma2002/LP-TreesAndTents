@@ -4,6 +4,7 @@
 :- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
+
 % tamanho_tabuleiro(Tabuleiro, Linhas, Colunas)
 tamanho_tabuleiro(Tabuleiro, Linhas, Colunas) :-
     length(Tabuleiro, Linhas),
@@ -27,7 +28,24 @@ nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
 numero_obj_lista(_, [], 0).
 numero_obj_lista(Obj, [P | R], N) :-
     numero_obj_lista(Obj, R, N1),
-    ((var(Obj), var(P); Obj == P, not(var(P))) -> N is N1 + 1; N is N1).
+    ((var(Obj), var(P); Obj == P, not(var(P))) -> 
+        N is N1 + 1; 
+        N is N1
+    ).
+
+% troca_elemento(Lista, Indice, Obj, NovaLista)
+troca_elemento(Lista, Indice, Obj, NovaLista) :- 
+    troca_elemento_i(Lista, Indice, Obj, NovaLista, 1), !.
+troca_elemento_i([], _, _, [], _).
+troca_elemento_i([_ | R], Indice, Obj, [Obj | R1], Cont) :-
+    Cont =:= Indice,
+    Cont1 is Cont + 1,
+    troca_elemento_i(R, Indice, Obj, R1, Cont1).
+troca_elemento_i([P | R], Indice, Obj, [P | R1], Cont) :-
+    Cont1 is Cont + 1,
+    troca_elemento_i(R, Indice, Obj, R1, Cont1).
+
+
 
 % Consultas ====================================================================
 
@@ -51,7 +69,10 @@ vizinhancaAlargada((L, C), [(L1, C1), (L1, C), (L1, C2),
 % todasCelulas(Tabuleiro, TodasCelulas, Objecto)
 todasCelulas(Tabuleiro, TodasCelulas) :-
     tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
-    findall((Li, Co), (between(1, Linhas, Li), between(1, Colunas, Co)), TodasCelulas).
+    findall((Li, Co), 
+        (between(1, Linhas, Li), between(1, Colunas, Co)), 
+        TodasCelulas
+    ).
 
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
     todasCelulas(Tabuleiro, TodasCelulas),
@@ -71,3 +92,15 @@ celulaVazia(Tabuleiro, (L, C)) :-
     var(Obj).
 
 % Inserção de tendas e relva ===================================================
+
+% insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
+% insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
+%     insereObjectoCelula_i(Tabuleiro, TendaOuRelva, (L, C), [], (L_cur, C_curr)).
+
+% insereObjectoCelula_i([], _, _, NewTabuleiro, _).
+% insereObjectoCelula_i() :-
+
+
+
+
+    
