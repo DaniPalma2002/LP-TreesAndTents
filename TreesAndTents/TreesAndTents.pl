@@ -8,7 +8,17 @@
 obtem_objeto(Tabuleiro, (L, C), Objeto) :-
     nth1(L, Tabuleiro, Linha),
     nth1(C, Linha, Objeto).
-    
+
+% nao_tem_objeto(Tabuleiro, Obj, (L, C))
+nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
+    obtem_objeto(Tabuleiro, (L, C), O),
+    not((O == Obj) ; var(Obj)).
+
+% numero_obj_lista(Lista, Objeto, N)
+numero_obj_lista(_, [], 0).
+numero_obj_lista(Obj, [P | R], N) :-
+    numero_obj_lista(Obj, R, N1),
+    (Obj == P, not(var(P)) -> N is N1 + 1; N is N1).
 
 % Consultas ====================================================================
 
@@ -36,21 +46,18 @@ todasCelulas(Tabuleiro, TodasCelulas) :-
     length(C, Colunas),
     findall((Li, Co), (between(1, Linhas, Li), between(1, Colunas, Co)), TodasCelulas).
 
-nao_tem_objeto(Tabuleiro, Obj, (A, B)) :-
-    obtem_objeto(Tabuleiro, (A, B), O),
-    not((O == Obj) ; var(Obj)).
-
-% todasCelulas(Tabuleiro, TodasCelulas, Objecto) :-
-%     var(Objecto),
-%     todasCelulas(Tabuleiro, TodasCelulas).
-
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
     todasCelulas(Tabuleiro, TodasCelulas),
     exclude(nao_tem_objeto(Tabuleiro, Objecto), TodasCelulas, Celulas).
     
     
-
 % calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto)
+calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Obj) :-
+    maplist(numero_obj_lista(Obj), Tabuleiro, ContagemLinhas),
+    transpose(Tabuleiro, TransposeTab),
+    maplist(numero_obj_lista(Obj), TransposeTab, ContagemColunas).
+    
+    
 
 % celulaVazia(Tabuleiro, (L, C))
 
