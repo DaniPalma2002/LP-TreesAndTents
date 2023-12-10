@@ -21,7 +21,7 @@ obtem_objeto(Tabuleiro, (L, C), Objeto) :-
     ).
 
 % nao_tem_objeto(Tabuleiro, Obj, (L, C))
-% nessas coordenadas não tem o objeto Obj
+% nessas coordenadas nao tem o objeto Obj
 nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
     obtem_objeto(Tabuleiro, (L, C), O),
     not((O == Obj) ; var(Obj)).
@@ -38,7 +38,7 @@ numero_obj_lista(Obj, [P | R], N) :-
     !.
 
 % troca_elemento(Lista, Indice, Obj, NovaLista)
-% muda o valor da lista que está no indice dado
+% muda o valor da lista que esta no indice dado
 troca_elemento(Lista, Indice, Obj, NovaLista) :- 
     troca_elemento_i(Lista, Indice, Obj, NovaLista, 1), !.
 troca_elemento_i([], _, _, [], _).
@@ -65,7 +65,7 @@ print_valor(Valor) :-
     write('  ').
 
 % indice_mesmo_valor(L1, L2, Indices)
-% dadas duas listas, devolve os indices em que elas têm o mesmo valor
+% dadas duas listas, devolve os indices em que elas tem o mesmo valor
 indices_mesmo_valor(L1, L2, Indices) :-
     findall(I, 
         (nth1(I, L1, Value), nth1(I, L2, Value)), 
@@ -118,7 +118,7 @@ celulaVazia(Tabuleiro, (L, C)) :-
     var(Obj).
 
 
-% Inserção de tendas e relva ===================================================
+% Insercao de tendas e relva ===================================================
 
 % insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
 insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
@@ -141,7 +141,7 @@ insereObjectoEntrePosicoes_fill(Tabuleiro, [L | R], TendaOuRelva) :-
     insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, 1), (L, Len)),
     insereObjectoEntrePosicoes_fill(Tabuleiro, R, TendaOuRelva).
 
-% Estratégias ==================================================================
+% Estrategias ==================================================================
 
 % relva(Puzzle)
 relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
@@ -159,7 +159,9 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     
 
 % inacessiveis(Tabuleiro)
+% coloca relva na posicao x se x nao for uma arvore e nao tiver arvores na sua vizinhanca 
 inacessiveis(Tabuleiro) :- 
+    print_tabuleiro(Tabuleiro),
     processa_linhas(Tabuleiro, (1, 1), Tabuleiro),
     print_tabuleiro(Tabuleiro).
 % AUX: processa_linhas(Tabuleiro, (L, C), Tabuleiro)
@@ -187,6 +189,7 @@ processa_colunas([Obj | R], (L, C), Tabuleiro) :-
     processa_colunas(R, (L, C1), Tabuleiro).
 
     
+% aproveita(Puzzle)
 
 
 
