@@ -54,15 +54,24 @@ troca_elemento_i([P | R], Indice, Obj, [P | R1], Cont) :-
 print_tabuleiro(Tabuleiro) :-
     writeln('TABULEIRO:'),
     maplist(print_linha, Tabuleiro).
-
 print_linha([]) :- nl.
 print_linha([P | R]) :-
     print_valor(P),
     print_linha(R).
-
 print_valor(Valor) :-
     (var(Valor) -> write('_'); write(Valor)),
     write('  ').
+
+% print_tabuleiro(Tabuleiro)
+print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+    writeln('PUZZLE: ============'),
+    write('   '), maplist(print_valor, TendasPColuna), nl,
+    print_linha2(Tabuleiro, TendasPLinha).
+print_linha2([], _) :- nl.
+print_linha2([PT | RT], [P | R]) :-
+    write(P), write('  '),
+    print_linha(PT),
+    print_linha2(RT, R).
 
 % indice_mesmo_valor(L1, L2, Indices)
 % dadas duas listas, devolve os indices em que elas tem o mesmo valor
@@ -71,6 +80,10 @@ indices_mesmo_valor(L1, L2, Indices) :-
         (nth1(I, L1, Value), nth1(I, L2, Value)), 
         Indices
     ).
+
+
+adiciona_valores(X, Y, Res) :-
+    Res is X + Y.
 
 % Consultas ====================================================================
 
@@ -98,13 +111,14 @@ todasCelulas(Tabuleiro, TodasCelulas) :-
         (between(1, Linhas, Li), between(1, Colunas, Co)), 
         TodasCelulas
     ).
-
+% devolve todas as celulas (L, C) que tem esse objeto
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
     todasCelulas(Tabuleiro, TodasCelulas),
     exclude(nao_tem_objeto(Tabuleiro, Objecto), TodasCelulas, Celulas).
     
     
 % calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto)
+% devolve numero de objetos Obj em cada linha e em cada coluna
 calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Obj) :-
     maplist(numero_obj_lista(Obj), Tabuleiro, ContagemLinhas),
     transpose(Tabuleiro, TransposeTab),
@@ -190,7 +204,22 @@ processa_colunas([Obj | R], (L, C), Tabuleiro) :-
 
     
 % aproveita(Puzzle)
+aproveita((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+    aproveita_i(Tabuleiro, TendasPLinha),
+    transpose(Tabuleiro, TabTranspose),
+    aproveita_i(TabTranspose, TendasPColuna),
+    transpose(TabTranspose, Tabuleiro),
+    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)).
 
-
-
+aproveita_i(Tabuleiro, TendasPLinha) :-
+    calculaObjectosTabuleiro(Tabuleiro, CLinhasTenda, _, t),
+    calculaObjectosTabuleiro(Tabuleiro, CLinhasVazio, _, _),
+    maplist(adiciona_valores, CLinhasVazio, CLinhasTenda, CLinhas),
+    write(TendasPLinha), write(CLinhas), nl,
+    indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas),
+    writeln(IndiceLinhas),
+    insereObjectoEntrePosicoes_fill(Tabuleiro, IndiceLinhas, t),
+    !.
     
+
+
