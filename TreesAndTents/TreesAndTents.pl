@@ -52,9 +52,17 @@ troca_elemento_i([P | R], Indice, Obj, [P | R1], Cont) :-
 
 % print_tabuleiro(Tabuleiro)
 print_tabuleiro(Tabuleiro) :-
-    writeln('Tabuleiro:'),
-    maplist(writeln, Tabuleiro),
-    writeln('--------').
+    writeln('TABULEIRO:'),
+    maplist(print_linha, Tabuleiro).
+
+print_linha([]) :- nl.
+print_linha([P | R]) :-
+    print_valor(P),
+    print_linha(R).
+
+print_valor(Valor) :-
+    (var(Valor) -> write('_'); write(Valor)),
+    write('  ').
 
 % indice_mesmo_valor(L1, L2, Indices)
 % dadas duas listas, devolve os indices em que elas têm o mesmo valor
@@ -118,6 +126,7 @@ insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
     troca_elemento(Linha, C, TendaOuRelva, NovaLinha),
     troca_elemento(Tabuleiro, L, NovaLinha, Tabuleiro).
 
+
 % insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) # TODO PRECISA DE SER APENAS NA MESMA LINHA??
 insereObjectoEntrePosicoes(_, _, (_, C1), (_, C2)) :- C1 > C2, !.
 insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) :-
@@ -148,6 +157,7 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     print_tabuleiro(Tabuleiro),
     !.
     
+
 % inacessiveis(Tabuleiro)
 inacessiveis(Tabuleiro) :- 
     processa_linhas(Tabuleiro, (1, 1), Tabuleiro),
