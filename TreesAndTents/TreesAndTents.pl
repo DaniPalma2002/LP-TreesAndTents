@@ -5,6 +5,8 @@
 
 % Auxiliares ===================================================================
 
+% # TODO CRIAR METODO AUXILIAR PARA VERIFICAR SE (L, C) E VALIDO
+
 % tamanho_tabuleiro(Tabuleiro, Linhas, Colunas)
 tamanho_tabuleiro(Tabuleiro, Linhas, Colunas) :-
     length(Tabuleiro, Linhas),
@@ -23,8 +25,18 @@ obtem_objeto(Tabuleiro, (L, C), Objeto) :-
 % nao_tem_objeto(Tabuleiro, Obj, (L, C))
 % nessas coordenadas nao tem o objeto Obj
 nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
+    celula_valida(Tabuleiro, (L, C)),
     obtem_objeto(Tabuleiro, (L, C), O),
     not((O == Obj) ; var(Obj)).
+
+
+% nao_tem_var(Tabuleiro, Obj, (L, C))
+% nessas coordenadas nao esta vazio
+nao_tem_var(Tabuleiro, (L, C)) :-
+    celula_valida(Tabuleiro, (L, C)),
+    obtem_objeto(Tabuleiro, (L, C), Obj),
+    not(var(Obj)).
+
 
 % numero_obj_lista(Objeto, Lista, N)
 % devolve o numero de objetos (Objeto) da lista
@@ -62,7 +74,7 @@ print_valor(Valor) :-
     (var(Valor) -> write('_'); write(Valor)),
     write('  ').
 
-% print_tabuleiro(Tabuleiro)
+% print_puzzle
 print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     writeln('PUZZLE: ============'),
     write('   '), maplist(print_valor, TendasPColuna), nl,
@@ -81,9 +93,13 @@ indices_mesmo_valor(L1, L2, Indices) :-
         Indices
     ).
 
-
 adiciona_valores(X, Y, Res) :-
     Res is X + Y.
+
+% celula_valida(Tabuleiro, (L, C))
+celula_valida(Tabuleiro, (L, C)) :-
+    tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
+    L > 0, C > 0, L =< Linhas, C =< Colunas.
 
 % Consultas ====================================================================
 
@@ -93,7 +109,13 @@ vizinhanca((L, C), [(L1, C), (L, C1), (L, C2), (L2, C)]) :-
     L2 is L + 1,
     C1 is C - 1,
     C2 is C + 1.
-    
+
+% devolve vizinhanca mas só as que sao vazias
+vizinhanca_vazia(Tabuleiro, (L, C), Vizinhanca) :-
+    vizinhanca((L, C), Viz),
+    exclude(nao_tem_var(Tabuleiro), Viz, Vizinhanca).
+
+
 % vizinhancaAlargada((L , C), VizinhancaAlargada)
 vizinhancaAlargada((L, C), [(L1, C1), (L1, C), (L1, C2),
                             (L, C1)          , (L, C2), 
@@ -136,6 +158,7 @@ celulaVazia(Tabuleiro, (L, C)) :-
 
 % insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C))
 insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
+    %write(L), writeln(C),
     nth1(L, Tabuleiro, Linha),
     troca_elemento(Linha, C, TendaOuRelva, NovaLinha),
     troca_elemento(Tabuleiro, L, NovaLinha, Tabuleiro).
@@ -158,6 +181,7 @@ insereObjectoEntrePosicoes_fill(Tabuleiro, [L | R], TendaOuRelva) :-
 % Estrategias ==================================================================
 
 % relva(Puzzle)
+% coloca relva em todas as linhas e colunas que ja tem asa tendas todas
 relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhas, CColunas, t), 
     indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas), 
@@ -168,7 +192,7 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     transpose(Tabuleiro, TabTranspose),
     insereObjectoEntrePosicoes_fill(TabTranspose, IndiceColunas, r),
     transpose(TabTranspose, Tabuleiro),
-    print_tabuleiro(Tabuleiro),
+    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
     
 
@@ -204,6 +228,8 @@ processa_colunas([Obj | R], (L, C), Tabuleiro) :-
 
     
 % aproveita(Puzzle)
+% coloca tendas nas linhas e colunas em que os espacos vazios mais as tendas ja 
+% colocadas e igual ao numero de tendas para colocar no total da linha/coluna 
 aproveita((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     aproveita_i(Tabuleiro, TendasPLinha),
     transpose(Tabuleiro, TabTranspose),
@@ -215,11 +241,54 @@ aproveita_i(Tabuleiro, TendasPLinha) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhasTenda, _, t),
     calculaObjectosTabuleiro(Tabuleiro, CLinhasVazio, _, _),
     maplist(adiciona_valores, CLinhasVazio, CLinhasTenda, CLinhas),
-    write(TendasPLinha), write(CLinhas), nl,
+    %write(TendasPLinha), write(CLinhas), nl,
     indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas),
-    writeln(IndiceLinhas),
+    %writeln(IndiceLinhas),
     insereObjectoEntrePosicoes_fill(Tabuleiro, IndiceLinhas, t),
     !.
     
 
+% limpaVizinhancas(Puzzle)
+% coloca relva em todas as posicoes a volta de uma tenda (com diagonais)
+limpaVizinhancas((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+    todasCelulas(Tabuleiro, Celulas, t),
+    %writeln(Celulas),
+    preenche_vizinhanca_celulas(Tabuleiro, Celulas, r),
+    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
+    !.
 
+preenche_vizinhanca_celulas(_, [], _).
+preenche_vizinhanca_celulas(Tabuleiro, [P | R], Obj) :-
+    vizinhancaAlargada(P, VizAl),
+    %writeln(VizAl),
+    insereObjCelulas(Tabuleiro, Obj, VizAl),
+    preenche_vizinhanca_celulas(Tabuleiro, R, Obj).
+
+insereObjCelulas(_, _, []).
+insereObjCelulas(Tabuleiro, Obj, [(L, C) | RC]) :-
+    (celula_valida(Tabuleiro, (L, C)) -> 
+        insereObjectoCelula(Tabuleiro, Obj, (L, C));
+        true
+    ),
+    insereObjCelulas(Tabuleiro, Obj, RC).
+
+
+% unicaHipotese(Puzzle) # TODO VERIFICAR ARVORES NAS EXTREMIDADES
+unicaHipotese((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+    todasCelulas(Tabuleiro, Celulas, a),
+    writeln(Celulas),
+    preenche_vizinhanca_arvores(Tabuleiro, Celulas, t),
+    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
+    !.
+
+preenche_vizinhanca_arvores(_, [], _).
+preenche_vizinhanca_arvores(Tabuleiro, [P | R], Obj) :-
+    vizinhanca_vazia(Tabuleiro, P, Viz),
+    write('viz: '), writeln(Viz),
+    length(Viz, N),
+    writeln(N),
+    ((N == 1) ->
+        insereObjCelulas(Tabuleiro, Obj, Viz);
+        true
+    ),
+    preenche_vizinhanca_arvores(Tabuleiro, R, Obj).
