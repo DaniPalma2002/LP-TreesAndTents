@@ -12,6 +12,7 @@ tamanho_tabuleiro(Tabuleiro, Linhas, Colunas) :-
     length(C, Colunas).
 
 % obtem_objeto(Tabuleiro, (L, C), Objeto)
+% dado a linha e a coluna, devolve o valor dessas coordenadas
 obtem_objeto(Tabuleiro, (L, C), Objeto) :-
     tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
     ((L < 1; C < 1; L > Linhas; C > Colunas) -> 
@@ -20,11 +21,13 @@ obtem_objeto(Tabuleiro, (L, C), Objeto) :-
     ).
 
 % nao_tem_objeto(Tabuleiro, Obj, (L, C))
+% nessas coordenadas não tem o objeto Obj
 nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
     obtem_objeto(Tabuleiro, (L, C), O),
     not((O == Obj) ; var(Obj)).
 
 % numero_obj_lista(Objeto, Lista, N)
+% devolve o numero de objetos (Objeto) da lista
 numero_obj_lista(_, [], 0).
 numero_obj_lista(Obj, [P | R], N) :-
     numero_obj_lista(Obj, R, N1),
@@ -35,6 +38,7 @@ numero_obj_lista(Obj, [P | R], N) :-
     !.
 
 % troca_elemento(Lista, Indice, Obj, NovaLista)
+% muda o valor da lista que está no indice dado
 troca_elemento(Lista, Indice, Obj, NovaLista) :- 
     troca_elemento_i(Lista, Indice, Obj, NovaLista, 1), !.
 troca_elemento_i([], _, _, [], _).
@@ -52,7 +56,8 @@ print_tabuleiro(Tabuleiro) :-
     maplist(writeln, Tabuleiro),
     writeln('--------').
 
-% indice_mesmo_valor(L1, L2, Indice)
+% indice_mesmo_valor(L1, L2, Indices)
+% dadas duas listas, devolve os indices em que elas têm o mesmo valor
 indices_mesmo_valor(L1, L2, Indices) :-
     findall(I, 
         (nth1(I, L1, Value), nth1(I, L2, Value)), 
@@ -134,8 +139,8 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhas, CColunas, t), 
     indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas), 
     indices_mesmo_valor(TendasPColuna, CColunas, IndiceColunas), 
-    writeln(TendasPLinha), writeln(CLinhas), writeln(IndiceLinhas), nl,
-    writeln(TendasPColuna), writeln(CColunas), writeln(IndiceColunas), nl,
+    %writeln(TendasPLinha), writeln(CLinhas), writeln(IndiceLinhas), nl,
+    %writeln(TendasPColuna), writeln(CColunas), writeln(IndiceColunas), nl,
     insereObjectoEntrePosicoes_fill(Tabuleiro, IndiceLinhas, r),
     transpose(Tabuleiro, TabTranspose),
     insereObjectoEntrePosicoes_fill(TabTranspose, IndiceColunas, r),
@@ -143,7 +148,34 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     print_tabuleiro(Tabuleiro),
     !.
     
-    
+% inacessiveis(Tabuleiro)
+inacessiveis(Tabuleiro) :- 
+    processa_linhas(Tabuleiro, (1, 1), Tabuleiro),
+    print_tabuleiro(Tabuleiro).
+% AUX: processa_linhas(Tabuleiro, (L, C), Tabuleiro)
+processa_linhas([], _, _).
+processa_linhas([P | R], (L, C), Tabuleiro) :-
+    processa_colunas(P, (L, C), Tabuleiro),
+    L1 is L + 1,
+    processa_linhas(R, (L1, 1), Tabuleiro).
+% AUX: processa_colunas(Linha, (L, C), Tabuleiro) :-
+processa_colunas([], _, _).
+processa_colunas([Obj | R], (L, C), Tabuleiro) :-
+    % write('Element: '), write(Obj),
+    % write(' | Row Index: '), write(L),
+    % write(' | Column Index: '), write(C),
+    vizinhanca((L, C), Viz),
+    maplist(obtem_objeto(Tabuleiro), Viz, ValoresViz),
+    % write(' | vizinhanca: '), write(ValoresViz),
+    numero_obj_lista(a, ValoresViz, N),
+    % write(' | count a '), write(N), nl,
+    (((var(Obj); Obj \= a), N == 0) -> 
+        insereObjectoCelula(Tabuleiro, r, (L, C)); 
+        true
+    ),
+    C1 is C + 1,
+    processa_colunas(R, (L, C1), Tabuleiro).
+
     
 
 
