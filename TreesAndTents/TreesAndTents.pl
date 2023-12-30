@@ -4,7 +4,6 @@
 :- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
-
 % # TODO CRIAR METODO AUXILIAR PARA VERIFICAR SE (L, C) E VALIDO
 
 % tamanho_tabuleiro(Tabuleiro, Linhas, Colunas)
@@ -28,7 +27,6 @@ nao_tem_objeto(Tabuleiro, Obj, (L, C)) :-
     celula_valida(Tabuleiro, (L, C)),
     obtem_objeto(Tabuleiro, (L, C), O),
     not((O == Obj) ; var(Obj)).
-
 
 % nao_tem_var(Tabuleiro, Obj, (L, C))
 % nessas coordenadas nao esta vazio
@@ -99,6 +97,7 @@ adiciona_valores(X, Y, Res) :-
 % celula_valida(Tabuleiro, (L, C))
 celula_valida(Tabuleiro, (L, C)) :-
     tamanho_tabuleiro(Tabuleiro, Linhas, Colunas),
+    number(L), number(C),
     L > 0, C > 0, L =< Linhas, C =< Colunas.
 
 % Consultas ====================================================================
@@ -113,7 +112,14 @@ vizinhanca((L, C), [(L1, C), (L, C1), (L, C2), (L2, C)]) :-
 % devolve vizinhanca mas só as que sao vazias
 vizinhanca_vazia(Tabuleiro, (L, C), Vizinhanca) :-
     vizinhanca((L, C), Viz),
-    exclude(nao_tem_var(Tabuleiro), Viz, Vizinhanca).
+    exclude(nao_tem_var(Tabuleiro), Viz, VizinhancaT),
+    include(celula_valida(Tabuleiro), VizinhancaT, Vizinhanca).
+
+% devolve vizinhanca mas só as que tem tendas
+vizinhanca_tendas(Tabuleiro, (L, C), Vizinhanca) :-
+    vizinhanca((L, C), Viz),
+    exclude(nao_tem_objeto(Tabuleiro, t), Viz, VizinhancaT),
+    include(celula_valida(Tabuleiro), VizinhancaT, Vizinhanca).
 
 
 % vizinhancaAlargada((L , C), VizinhancaAlargada)
@@ -198,10 +204,12 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
 
 % inacessiveis(Tabuleiro)
 % coloca relva na posicao x se x nao for uma arvore e nao tiver arvores na sua vizinhanca 
+inacessiveis((Tabuleiro, _, _)) :-
+    inacessiveis(Tabuleiro), !.
 inacessiveis(Tabuleiro) :- 
-    print_tabuleiro(Tabuleiro),
-    processa_linhas(Tabuleiro, (1, 1), Tabuleiro),
-    print_tabuleiro(Tabuleiro).
+    %print_tabuleiro(Tabuleiro),
+    processa_linhas(Tabuleiro, (1, 1), Tabuleiro).
+    %print_tabuleiro(Tabuleiro).
 % AUX: processa_linhas(Tabuleiro, (L, C), Tabuleiro)
 processa_linhas([], _, _).
 processa_linhas([P | R], (L, C), Tabuleiro) :-
@@ -234,8 +242,8 @@ aproveita((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     aproveita_i(Tabuleiro, TendasPLinha),
     transpose(Tabuleiro, TabTranspose),
     aproveita_i(TabTranspose, TendasPColuna),
-    transpose(TabTranspose, Tabuleiro),
-    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)).
+    transpose(TabTranspose, Tabuleiro).
+    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)).
 
 aproveita_i(Tabuleiro, TendasPLinha) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhasTenda, _, t),
@@ -284,11 +292,58 @@ unicaHipotese((Tabuleiro, TendasPLinha, TendasPColuna)) :-
 preenche_vizinhanca_arvores(_, [], _).
 preenche_vizinhanca_arvores(Tabuleiro, [P | R], Obj) :-
     vizinhanca_vazia(Tabuleiro, P, Viz),
-    write('viz: '), writeln(Viz),
+    vizinhanca_tendas(Tabuleiro, P, Tendas),
+    %write('viz: '), writeln(Viz),
     length(Viz, N),
-    writeln(N),
-    ((N == 1) ->
+    length(Tendas, Nt),
+    %writeln(N),
+    ((N == 1, Nt == 0) ->
         insereObjCelulas(Tabuleiro, Obj, Viz);
         true
     ),
     preenche_vizinhanca_arvores(Tabuleiro, R, Obj).
+
+
+
+
+% arv_tem_tenda(Arv, Ten)
+arv_tem_tenda((La, Ca), (Lt, Ct)) :-
+    % write('Arv: '), write((La, Ca)), write(' | Ten: '), writeln((Lt, Ct)),
+    abs(La - Lt, DifL),
+    abs(Ca - Ct, DifC),
+    DifL =< 1,
+    DifC =< 1,
+    (La == Lt; Ca == Ct).
+
+% valida(LArv, LTen)
+% vefifica se tem relação 1 para 1 entre tendas e árvores
+valida(LArv, LTen) :- % # TODO
+    length(LArv, Na),
+    length(LTen, Nt),
+    Na == Nt.
+    %exclude(arv_tem_tenda, LArv, LTen).
+
+
+% resolve(Puzzle)
+resolve((T, TpL, TpC)) :-
+    todasCelulas(T, Arv, a),
+    todasCelulas(T, Ten, t),
+    T2 = T,
+    not(valida(Arv, Ten)),
+    relva((T2, TpL, TpC)),
+    inacessiveis((T2, TpL, TpC)),
+    aproveita((T2, TpL, TpC)),
+    limpaVizinhancas((T2, TpL, TpC)),
+    unicaHipotese((T2, TpL, TpC)),
+    ((T == T2) -> 
+        false;
+        %writeln('Nao foi possivel resolver o puzzle');
+        resolve((T2, TpL, TpC))
+    ).
+
+resolve((T, TpL, TpC)) :-
+    todasCelulas(T, Arv, a),
+    todasCelulas(T, Ten, t),
+    valida(Arv, Ten),
+    print_puzzle((T, TpL, TpC)),
+    !.
