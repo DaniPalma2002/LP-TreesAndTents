@@ -1,7 +1,7 @@
 % Daniel Pereira 99194
 :- use_module(library(clpfd)). % para poder usar transpose/2
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % ver listas completas
-%:- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
+:- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
 % # TODO CRIAR METODO AUXILIAR PARA VERIFICAR SE (L, C) E VALIDO
