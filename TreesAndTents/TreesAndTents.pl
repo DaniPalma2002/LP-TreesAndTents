@@ -1,7 +1,7 @@
 % Daniel Pereira 99194
 :- use_module(library(clpfd)). % para poder usar transpose/2
 :- set_prolog_flag(answer_write_options,[max_depth(0)]). % ver listas completas
-:- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
+%:- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
 % # TODO CRIAR METODO AUXILIAR PARA VERIFICAR SE (L, C) E VALIDO
@@ -109,13 +109,13 @@ vizinhanca((L, C), [(L1, C), (L, C1), (L, C2), (L2, C)]) :-
     C1 is C - 1,
     C2 is C + 1.
 
-% devolve vizinhanca mas só as que sao vazias
+% devolve vizinhanca mas so as que sao vazias
 vizinhanca_vazia(Tabuleiro, (L, C), Vizinhanca) :-
     vizinhanca((L, C), Viz),
     exclude(nao_tem_var(Tabuleiro), Viz, VizinhancaT),
     include(celula_valida(Tabuleiro), VizinhancaT, Vizinhanca).
 
-% devolve vizinhanca mas só as que tem tendas
+% devolve vizinhanca mas so as que tem tendas
 vizinhanca_tendas(Tabuleiro, (L, C), Vizinhanca) :-
     vizinhanca((L, C), Viz),
     exclude(nao_tem_objeto(Tabuleiro, t), Viz, VizinhancaT),
@@ -141,9 +141,15 @@ todasCelulas(Tabuleiro, TodasCelulas) :-
     ).
 % devolve todas as celulas (L, C) que tem esse objeto
 todasCelulas(Tabuleiro, Celulas, Objecto) :-
+    not(var(Objecto)),
     todasCelulas(Tabuleiro, TodasCelulas),
     exclude(nao_tem_objeto(Tabuleiro, Objecto), TodasCelulas, Celulas).
-    
+todasCelulas(Tabuleiro, Celulas, Objecto) :-
+    var(Objecto),
+    todasCelulas(Tabuleiro, TodasCelulas),
+    exclude(nao_tem_var(Tabuleiro), TodasCelulas, Celulas).
+
+
     
 % calculaObjectosTabuleiro(Tabuleiro, ContagemLinhas, ContagemColunas, Objecto)
 % devolve numero de objetos Obj em cada linha e em cada coluna
@@ -198,7 +204,7 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     transpose(Tabuleiro, TabTranspose),
     insereObjectoEntrePosicoes_fill(TabTranspose, IndiceColunas, r),
     transpose(TabTranspose, Tabuleiro),
-    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
+    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
     
 
@@ -258,11 +264,11 @@ aproveita_i(Tabuleiro, TendasPLinha) :-
 
 % limpaVizinhancas(Puzzle)
 % coloca relva em todas as posicoes a volta de uma tenda (com diagonais)
-limpaVizinhancas((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+limpaVizinhancas((Tabuleiro, _, _)) :-
     todasCelulas(Tabuleiro, Celulas, t),
     %writeln(Celulas),
     preenche_vizinhanca_celulas(Tabuleiro, Celulas, r),
-    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
+    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
 
 preenche_vizinhanca_celulas(_, [], _).
@@ -282,11 +288,11 @@ insereObjCelulas(Tabuleiro, Obj, [(L, C) | RC]) :-
 
 
 % unicaHipotese(Puzzle) # TODO VERIFICAR ARVORES NAS EXTREMIDADES
-unicaHipotese((Tabuleiro, TendasPLinha, TendasPColuna)) :-
+unicaHipotese((Tabuleiro, _, _)) :-
     todasCelulas(Tabuleiro, Celulas, a),
-    writeln(Celulas),
+    % writeln(Celulas),
     preenche_vizinhanca_arvores(Tabuleiro, Celulas, t),
-    print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
+    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
 
 preenche_vizinhanca_arvores(_, [], _).
@@ -316,7 +322,7 @@ arv_tem_tenda((La, Ca), (Lt, Ct)) :-
     (La == Lt; Ca == Ct).
 
 % valida(LArv, LTen)
-% vefifica se tem relação 1 para 1 entre tendas e árvores
+% vefifica se tem relacao 1 para 1 entre tendas e arvores
 valida(LArv, LTen) :- % # TODO
     length(LArv, Na),
     length(LTen, Nt),
@@ -341,9 +347,9 @@ resolve((T, TpL, TpC)) :-
         resolve((T2, TpL, TpC))
     ).
 
-resolve((T, TpL, TpC)) :-
+resolve((T, _, _)) :-
     todasCelulas(T, Arv, a),
     todasCelulas(T, Ten, t),
     valida(Arv, Ten),
-    print_puzzle((T, TpL, TpC)),
+    % print_puzzle((T, TpL, TpC)),
     !.

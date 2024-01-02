@@ -6,7 +6,7 @@ limpaLinha([X], [X]) :- (X == 'r'; X == t; X == a), !.
 limpaLinha([_], [v]) :- !.
 limpaLinha([H | T], [H | L]) :- (H == 'r'; H == t; H == a), !, limpaLinha(T, L).
 limpaLinha([_ | T], [v | L]) :- limpaLinha(T, L).
-
+:- ['TreesAndTents.pl'].
 %--------------------------------
 % vizinhanca (P1)
 %--------------------------------
