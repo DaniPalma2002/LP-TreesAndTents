@@ -4,7 +4,6 @@
 :- ['puzzlesAcampar.pl']. % Ficheiro dado. No Mooshak tera mais puzzles.
 
 % Auxiliares ===================================================================
-% # TODO CRIAR METODO AUXILIAR PARA VERIFICAR SE (L, C) E VALIDO
 
 % tamanho_tabuleiro(Tabuleiro, Linhas, Colunas)
 tamanho_tabuleiro(Tabuleiro, Linhas, Colunas) :-
@@ -176,7 +175,7 @@ insereObjectoCelula(Tabuleiro, TendaOuRelva, (L, C)) :-
     troca_elemento(Tabuleiro, L, NovaLinha, Tabuleiro).
 
 
-% insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) # TODO PRECISA DE SER APENAS NA MESMA LINHA??
+% insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2))
 insereObjectoEntrePosicoes(_, _, (_, C1), (_, C2)) :- C1 > C2, !.
 insereObjectoEntrePosicoes(Tabuleiro, TendaOuRelva, (L, C1), (L, C2)) :-
     C1 =< C2,
@@ -198,13 +197,10 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhas, CColunas, t), 
     indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas), 
     indices_mesmo_valor(TendasPColuna, CColunas, IndiceColunas), 
-    %writeln(TendasPLinha), writeln(CLinhas), writeln(IndiceLinhas), nl,
-    %writeln(TendasPColuna), writeln(CColunas), writeln(IndiceColunas), nl,
     insereObjectoEntrePosicoes_fill(Tabuleiro, IndiceLinhas, r),
     transpose(Tabuleiro, TabTranspose),
     insereObjectoEntrePosicoes_fill(TabTranspose, IndiceColunas, r),
     transpose(TabTranspose, Tabuleiro),
-    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
     
 
@@ -213,9 +209,7 @@ relva((Tabuleiro, TendasPLinha, TendasPColuna)) :-
 inacessiveis((Tabuleiro, _, _)) :-
     inacessiveis(Tabuleiro), !.
 inacessiveis(Tabuleiro) :- 
-    %print_tabuleiro(Tabuleiro),
     processa_linhas(Tabuleiro, (1, 1), Tabuleiro).
-    %print_tabuleiro(Tabuleiro).
 % AUX: processa_linhas(Tabuleiro, (L, C), Tabuleiro)
 processa_linhas([], _, _).
 processa_linhas([P | R], (L, C), Tabuleiro) :-
@@ -225,14 +219,9 @@ processa_linhas([P | R], (L, C), Tabuleiro) :-
 % AUX: processa_colunas(Linha, (L, C), Tabuleiro) :-
 processa_colunas([], _, _).
 processa_colunas([Obj | R], (L, C), Tabuleiro) :-
-    % write('Element: '), write(Obj),
-    % write(' | Row Index: '), write(L),
-    % write(' | Column Index: '), write(C),
     vizinhanca((L, C), Viz),
     maplist(obtem_objeto(Tabuleiro), Viz, ValoresViz),
-    % write(' | vizinhanca: '), write(ValoresViz),
     numero_obj_lista(a, ValoresViz, N),
-    % write(' | count a '), write(N), nl,
     (((var(Obj); Obj \= a), N == 0) -> 
         insereObjectoCelula(Tabuleiro, r, (L, C)); 
         true
@@ -249,15 +238,12 @@ aproveita((Tabuleiro, TendasPLinha, TendasPColuna)) :-
     transpose(Tabuleiro, TabTranspose),
     aproveita_i(TabTranspose, TendasPColuna),
     transpose(TabTranspose, Tabuleiro).
-    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)).
 
 aproveita_i(Tabuleiro, TendasPLinha) :-
     calculaObjectosTabuleiro(Tabuleiro, CLinhasTenda, _, t),
     calculaObjectosTabuleiro(Tabuleiro, CLinhasVazio, _, _),
     maplist(adiciona_valores, CLinhasVazio, CLinhasTenda, CLinhas),
-    %write(TendasPLinha), write(CLinhas), nl,
     indices_mesmo_valor(TendasPLinha, CLinhas, IndiceLinhas),
-    %writeln(IndiceLinhas),
     insereObjectoEntrePosicoes_fill(Tabuleiro, IndiceLinhas, t),
     !.
     
@@ -266,15 +252,12 @@ aproveita_i(Tabuleiro, TendasPLinha) :-
 % coloca relva em todas as posicoes a volta de uma tenda (com diagonais)
 limpaVizinhancas((Tabuleiro, _, _)) :-
     todasCelulas(Tabuleiro, Celulas, t),
-    %writeln(Celulas),
     preenche_vizinhanca_celulas(Tabuleiro, Celulas, r),
-    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
 
 preenche_vizinhanca_celulas(_, [], _).
 preenche_vizinhanca_celulas(Tabuleiro, [P | R], Obj) :-
     vizinhancaAlargada(P, VizAl),
-    %writeln(VizAl),
     insereObjCelulas(Tabuleiro, Obj, VizAl),
     preenche_vizinhanca_celulas(Tabuleiro, R, Obj).
 
@@ -287,22 +270,18 @@ insereObjCelulas(Tabuleiro, Obj, [(L, C) | RC]) :-
     insereObjCelulas(Tabuleiro, Obj, RC).
 
 
-% unicaHipotese(Puzzle) # TODO VERIFICAR ARVORES NAS EXTREMIDADES
+% unicaHipotese(Puzzle)
 unicaHipotese((Tabuleiro, _, _)) :-
     todasCelulas(Tabuleiro, Celulas, a),
-    % writeln(Celulas),
     preenche_vizinhanca_arvores(Tabuleiro, Celulas, t),
-    %print_puzzle((Tabuleiro, TendasPLinha, TendasPColuna)),
     !.
 
 preenche_vizinhanca_arvores(_, [], _).
 preenche_vizinhanca_arvores(Tabuleiro, [P | R], Obj) :-
     vizinhanca_vazia(Tabuleiro, P, Viz),
     vizinhanca_tendas(Tabuleiro, P, Tendas),
-    %write('viz: '), writeln(Viz),
     length(Viz, N),
     length(Tendas, Nt),
-    %writeln(N),
     ((N == 1, Nt == 0) ->
         insereObjCelulas(Tabuleiro, Obj, Viz);
         true
@@ -314,7 +293,6 @@ preenche_vizinhanca_arvores(Tabuleiro, [P | R], Obj) :-
 
 % arv_tem_tenda(Arv, Ten)
 arv_tem_tenda((La, Ca), (Lt, Ct)) :-
-    % write('Arv: '), write((La, Ca)), write(' | Ten: '), writeln((Lt, Ct)),
     abs(La - Lt, DifL),
     abs(Ca - Ct, DifC),
     DifL =< 1,
@@ -327,29 +305,29 @@ valida(LArv, LTen) :- % # TODO
     length(LArv, Na),
     length(LTen, Nt),
     Na == Nt.
-    %exclude(arv_tem_tenda, LArv, LTen).
 
 
 % resolve(Puzzle)
-resolve((T, TpL, TpC)) :-
+resolve(Puzzle) :- 
+    resolve(Puzzle, 0).
+
+resolve((T, TpL, TpC), Cont) :-
+    Cont < 100,
     todasCelulas(T, Arv, a),
     todasCelulas(T, Ten, t),
-    T2 = T,
     not(valida(Arv, Ten)),
-    relva((T2, TpL, TpC)),
-    inacessiveis((T2, TpL, TpC)),
-    aproveita((T2, TpL, TpC)),
-    limpaVizinhancas((T2, TpL, TpC)),
-    unicaHipotese((T2, TpL, TpC)),
-    ((T == T2) -> 
-        false;
-        %writeln('Nao foi possivel resolver o puzzle');
-        resolve((T2, TpL, TpC))
-    ).
 
-resolve((T, _, _)) :-
+    relva((T, TpL, TpC)),
+    inacessiveis((T, TpL, TpC)),
+    aproveita((T, TpL, TpC)),
+    limpaVizinhancas((T, TpL, TpC)),
+    unicaHipotese((T, TpL, TpC)),
+
+    Cont1 is Cont + 1,
+    resolve((T, TpL, TpC), Cont1), !.
+
+resolve((T, _, _), _) :-
     todasCelulas(T, Arv, a),
     todasCelulas(T, Ten, t),
     valida(Arv, Ten),
-    % print_puzzle((T, TpL, TpC)),
     !.
